@@ -1,3 +1,23 @@
+## Fork Modifications
+
+This fork adds new events to enhance the calendar's interactivity:
+
+- `onDayHover`: Triggered when a day in the calendar is hovered over.
+- `onDayHoverOut`: Triggered when the mouse leaves a calendar day.
+
+### Usage Example
+
+```javascript
+$calendar.on('onDayHover', function(event, date) {
+    console.log('Hovered into day:', date);
+});
+
+$calendar.on('onDayHoverOut', function(event, date) {
+    console.log('Hovered out of day:', date);
+});
+```
+______________________________________________________________________________________________________________________________________
+
 # evo-calendar
 _Simple Modern-looking Event Calendar_
 
