@@ -782,8 +782,8 @@
   EvoCalendar.prototype.buildEventIndicator = function () {
     var _ = this;
 
-    // prevent duplication
-    _.$elements.innerEl.find(".calendar-day > day > .event-indicator").empty();
+    // prevent duplication remove span class="event-indicator"
+    _.$elements.innerEl.find(".calendar-day > .day > .event-indicator").empty();
 
     for (var i = 0; i < _.options.calendarEvents.length; i++) {
       _.addEventIndicator(_.options.calendarEvents[i]);
