@@ -392,7 +392,7 @@
     _.$elements.eventEl.find("[data-event-index]").off("click.evocalendar").on("click.evocalendar", _.selectEvent);
 
     // set event listener for each day (hover)
-    _.$elements.innerEl.find(".calendar-day").off("mouseenter.evocalendar mouseleave.evocalendar").on("mouseenter.evocalendar", ".day", _.onDayHover).on("mouseleave.evocalendar", ".day", _.onDayHoverOut);
+    _.attachDayHoverListeners();
   };
 
   // v1.0.0 - Destroy event listeners
@@ -633,9 +633,9 @@
 
   // v1.0.0 - Build Calendar: Title, Days
   EvoCalendar.prototype.buildCalendar = function () {
-    var _ = this,
-      markup,
-      title;
+    var _ = this;
+    var markup;
+    var title;
 
     _.calculateDays();
 
@@ -693,6 +693,7 @@
       // For event indicator (dots)
       _.buildEventIndicator();
     }
+    _.attachDayHoverListeners();
   };
 
   // v1.0.0 - Add event indicator/s (dots)
@@ -920,20 +921,31 @@
     var _ = this;
     var $dayElement = $(event.currentTarget);
     var date = $dayElement.data("dateVal");
+    var dateEvents = $dayElement.data("eventId");
+    // var dateEvents = $dayElement.attr("data-event-id");
 
     // Trigger a custom event with the hovered date
-    $(_.$elements.calendarEl).trigger("onDayHover", [date]);
+    $(_.$elements.calendarEl).trigger("onDayHover", [date, dateEvents]);
   };
 
-  // v1.0.0 v1.0.0 Custom event by José Ferreira - Handle day hover out
+  // v1.0.0 Custom event by José Ferreira - Handle day hover out
   EvoCalendar.prototype.onDayHoverOut = function (event) {
     var _ = this;
     var $dayElement = $(event.currentTarget);
     var date = $dayElement.data("dateVal");
+    var dateEvents = $dayElement.data("eventId");
+    // var dateEvents = $dayElement.attr("data-event-id");
 
     // Trigger a custom event when hover ends
-    $(_.$elements.calendarEl).trigger("onDayHoverOut", [date]);
+    $(_.$elements.calendarEl).trigger("onDayHoverOut", [date, dateEvents]);
   };
+
+  // Attach dayHover listeners
+  EvoCalendar.prototype.attachDayHoverListeners = function () {
+    var _ = this;
+    _.$elements.innerEl.find(".calendar-day").off("mouseenter.evocalendar mouseleave.evocalendar").on("mouseenter.evocalendar", ".day", _.onDayHover).on("mouseleave.evocalendar", ".day", _.onDayHoverOut);
+  };
+
   // v1.0.0 - Return active date
   EvoCalendar.prototype.getActiveDate = function () {
     var _ = this;
@@ -1058,6 +1070,7 @@
       // Single event
       addEvent(arr);
     }
+    _.attachDayHoverListeners();
   };
 
   // v1.0.0 - Remove Calendar Event(s)
