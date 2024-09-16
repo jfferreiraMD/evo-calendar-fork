@@ -728,6 +728,10 @@
         thisDate.append('<span class="event-indicator"></span>');
       }
 
+      var currentEvents = thisDate.attr("data-event-id") || "";
+      var updatedEvents = currentEvents ? `${currentEvents};${event.id}` : event.id;
+      thisDate.attr("data-event-id", updatedEvents);
+
       if (thisDate.find("span.event-indicator > .type-bullet > .type-" + type).length === 0) {
         htmlToAppend = '<div class="type-bullet"><div ';
 
@@ -746,30 +750,43 @@
   EvoCalendar.prototype.removeEventIndicator = function (event) {
     var _ = this;
     var event_date = event.date;
+    var event_id = event.id;
     var type = event.type;
 
     if (event_date instanceof Array) {
       var active_date = _.getBetweenDates(event_date);
 
       for (var i = 0; i < active_date.length; i++) {
-        removeDot(active_date[i]);
+        removeDot(active_date[i], event_id);
       }
     } else {
-      removeDot(event_date);
+      removeDot(active_date[i], event_id);
     }
 
-    function removeDot(date) {
+    function removeDot(date, id) {
       // Check if no '.event-indicator', 'cause nothing to remove
       if (_.$elements.innerEl.find('[data-date-val="' + date + '"] span.event-indicator').length === 0) {
         return;
       }
 
+      var eventIds = (dateElement.attr("data-event-id") || "").split(";");
+      if (eventIds.length > 0) {
+        eventIds = eventIds.filter((evId) => evId !== id);
+        var data_event_id = eventIds.join(";");
+
+        if (data_event_id) {
+          dateElement.attr("data-event-id", data_event_id);
+        } else {
+          dateElement.removeAttr("data-event-id");
+        }
+      }
       // // If has no type of event, then delete
       if (!_.hasSameDayEventType(date, type)) {
         _.$elements.innerEl
           .find('[data-date-val="' + date + '"] span.event-indicator > .type-bullet > .type-' + type)
           .parent()
           .remove();
+        _.$elements.innerEl;
       }
     }
   };
@@ -782,7 +799,7 @@
   EvoCalendar.prototype.buildEventIndicator = function () {
     var _ = this;
 
-    // prevent duplication remove span class="event-indicator"
+    // prevent duplication, remove span class="event-indicator"
     _.$elements.innerEl.find(".calendar-day > .day > .event-indicator").empty();
 
     for (var i = 0; i < _.options.calendarEvents.length; i++) {
