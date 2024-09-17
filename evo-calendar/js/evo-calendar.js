@@ -3,7 +3,7 @@
  *
  * Licensed under the MIT License
  *
- * Version: 1.1.2 - José Ferreira fork 17/09/2024 08:17
+ * Version: 1.1.2 - José Ferreira fork 17/09/2024 11:42
  * Author: Edlyn Villegas
  * Docs: https://edlynvillegas.github.com/evo-calendar
  * Repo: https://github.com/edlynvillegas/evo-calendar
@@ -43,7 +43,7 @@
         calendarEvents: null,
       };
       _.options = $.extend({}, _.defaults, settings);
-
+      
       _.initials = {
         default_class: $(element)[0].classList.value,
         validParts: /dd?|DD?|mm?|MM?|yy(?:yy)?/g,
@@ -393,7 +393,6 @@
 
     // set event listener for each day (hover)
     _.attachDayHoverListeners();
-    _.attachDayHoverListeners();
   };
 
   // v1.0.0 - Destroy event listeners
@@ -489,9 +488,11 @@
       markup += '<div class="calendar-inner">' + '<table class="calendar-table">' + '<tr><th colspan="7"></th></tr>' + '<tr class="calendar-header">';
       for (var i = 0; i < _.$label.days.length; i++) {
         var headerClass = "calendar-header-day";
-        if (_.$label.days[i] === _.initials.weekends.sat || _.$label.days[i] === _.initials.weekends.sun) {
+        // only highlight weekends if option is enabled
+        if ((_.options.highlightWeekends) || (_.$label.days[i] === _.initials.weekends.sat || _.$label.days[i] === _.initials.weekends.sun)) {
           headerClass += " --weekend";
         }
+        // _.options.highlightWeekends ? 
         markup += '<td class="' + headerClass + '">' + _.$label.days[i] + "</td>";
       }
       markup += "</tr></table>" + "</div>";
@@ -653,7 +654,7 @@
         // this loop is for weekdays (cells)
         if (day <= _.monthLength && (i > 0 || j >= _.startingDay)) {
           var dayClass = "calendar-day";
-          if (_.$label.days[j] === _.initials.weekends.sat || _.$label.days[j] === _.initials.weekends.sun) {
+          if ((_.options.highlightWeekends) && (_.$label.days[j] === _.initials.weekends.sat || _.$label.days[j] === _.initials.weekends.sun)) {
             dayClass += " --weekend"; // add '--weekend' to sat sun
           }
           markup += '<td class="' + dayClass + '">';
@@ -922,9 +923,17 @@
     var _ = this;
     var $dayElement = $(event.currentTarget);
     var date = $dayElement.data("dateVal");
+    var eventIds = $dayElement.data("eventId");
 
-    // Trigger a custom event with the hovered date
-    $(_.$elements.calendarEl).trigger("onDayHover", [date]);
+    var arr = Array.isArray(eventIds) ? eventIds : (eventIds ? eventIds.split(';') : []);
+
+    var events = arr.map(id => _.options.calendarEvents.find(e => e.id == id)).filter(Boolean);
+
+    $(_.$elements.calendarEl).trigger("onDayHover", [date, events]);
+
+    if (events.length > 0) {
+      _.showEventPopup($dayElement, date, events);
+    }
   };
 
   // v1.0.0 Custom event by José Ferreira - Handle day hover out
@@ -932,10 +941,53 @@
     var _ = this;
     var $dayElement = $(event.currentTarget);
     var date = $dayElement.data("dateVal");
+    //todo: send this as array rather than ';' concat
+    var dateEvents = $dayElement.data("eventId");
+
+    $('.event-popup').remove();
 
     // Trigger a custom event when hover ends
     $(_.$elements.calendarEl).trigger("onDayHoverOut", [date, dateEvents]);
   };
+
+  // Attach dayHover listeners
+  EvoCalendar.prototype.attachDayHoverListeners = function () {
+    var _ = this;
+    _.$elements.innerEl.find(".calendar-day")
+      .off("mouseenter.evocalendar mouseleave.evocalendar")
+      .on("mouseenter.evocalendar", ".day", _.onDayHover.bind(_))
+      .on("mouseleave.evocalendar", ".day", _.onDayHoverOut.bind(_));
+  };
+
+  // v1.0.0 Custom event 
+  EvoCalendar.prototype.showEventPopup = function ($dayElement, date, events) {
+    var _ = this;
+    var $popup = $('<div class="event-popup"></div>');
+
+    var themeColor = _.$elements.calendarEl.css('color') || '#8773c1';
+
+    var content = `<h4 style="color: ${themeColor}">${date}</h4>`;
+    events.forEach(event => {
+      var bulletColor = event.color || themeColor;
+      content += `
+      <p>
+        <span class="event-bullet" style="background-color: ${bulletColor}"></span>
+        ${event.name}
+      </p>`;
+    });
+
+    $popup.html(content);
+
+    $('body').append($popup);
+
+    var position = $dayElement.offset();
+    $popup.css({
+      top: position.top + $dayElement.outerHeight(),
+      left: position.left,
+      display: 'block'
+    });
+  };
+
   // v1.0.0 - Return active date
   EvoCalendar.prototype.getActiveDate = function () {
     var _ = this;

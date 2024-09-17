@@ -3,7 +3,7 @@
  *
  * Licensed under the MIT License
  *
- * Version: 1.1.2 - José Ferreira fork 17/09/2024 08:17
+ * Version: 1.1.2 - José Ferreira fork 17/09/2024 11:42
  * Author: Edlyn Villegas
  * Docs: https://edlynvillegas.github.com/evo-calendar
  * Repo: https://github.com/edlynvillegas/evo-calendar
@@ -288,6 +288,12 @@ tr.calendar-body .calendar-day .day.calendar-today {
 tr.calendar-body .calendar-day .day.calendar-today:hover {
     color: #fff;
     background-color: #755eb5;
+}
+
+tr.calendar-body .calendar-day.--weekend .day {
+    color: #fff;
+    background-color: #808080;
+    box-shadow: 0 5px 10px -3px #216583;
 }
 
 tr.calendar-body .calendar-day .day[disabled] {
