@@ -3,7 +3,7 @@
  *
  * Licensed under the MIT License
  *
- * Version: 1.1.2
+ * Version: 1.1.2 - José Ferreira fork 17/09/2024 08:17
  * Author: Edlyn Villegas
  * Docs: https://edlynvillegas.github.com/evo-calendar
  * Repo: https://github.com/edlynvillegas/evo-calendar
@@ -392,6 +392,7 @@
     _.$elements.eventEl.find("[data-event-index]").off("click.evocalendar").on("click.evocalendar", _.selectEvent);
 
     // set event listener for each day (hover)
+    _.attachDayHoverListeners();
     _.attachDayHoverListeners();
   };
 
@@ -921,11 +922,9 @@
     var _ = this;
     var $dayElement = $(event.currentTarget);
     var date = $dayElement.data("dateVal");
-    var dateEvents = $dayElement.data("eventId");
-    // var dateEvents = $dayElement.attr("data-event-id");
 
     // Trigger a custom event with the hovered date
-    $(_.$elements.calendarEl).trigger("onDayHover", [date, dateEvents]);
+    $(_.$elements.calendarEl).trigger("onDayHover", [date]);
   };
 
   // v1.0.0 Custom event by José Ferreira - Handle day hover out
@@ -933,19 +932,10 @@
     var _ = this;
     var $dayElement = $(event.currentTarget);
     var date = $dayElement.data("dateVal");
-    var dateEvents = $dayElement.data("eventId");
-    // var dateEvents = $dayElement.attr("data-event-id");
 
     // Trigger a custom event when hover ends
     $(_.$elements.calendarEl).trigger("onDayHoverOut", [date, dateEvents]);
   };
-
-  // Attach dayHover listeners
-  EvoCalendar.prototype.attachDayHoverListeners = function () {
-    var _ = this;
-    _.$elements.innerEl.find(".calendar-day").off("mouseenter.evocalendar mouseleave.evocalendar").on("mouseenter.evocalendar", ".day", _.onDayHover).on("mouseleave.evocalendar", ".day", _.onDayHoverOut);
-  };
-
   // v1.0.0 - Return active date
   EvoCalendar.prototype.getActiveDate = function () {
     var _ = this;
@@ -1106,6 +1096,7 @@
       // Single index
       deleteEvent(arr);
     }
+    _.attachDayHoverListeners();
   };
 
   // v1.0.0 - Check if date is valid
