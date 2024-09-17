@@ -3,7 +3,7 @@
  *
  * Licensed under the MIT License
  *
- * Version: 1.1.2 - José Ferreira fork 17/09/2024 11:42
+ * Version: 1.1.2 - José Ferreira fork 17/09/2024 15:38
  * Author: Edlyn Villegas
  * Docs: https://edlynvillegas.github.com/evo-calendar
  * Repo: https://github.com/edlynvillegas/evo-calendar
@@ -43,7 +43,7 @@
         calendarEvents: null,
       };
       _.options = $.extend({}, _.defaults, settings);
-      
+
       _.initials = {
         default_class: $(element)[0].classList.value,
         validParts: /dd?|DD?|mm?|MM?|yy(?:yy)?/g,
@@ -489,10 +489,10 @@
       for (var i = 0; i < _.$label.days.length; i++) {
         var headerClass = "calendar-header-day";
         // only highlight weekends if option is enabled
-        if ((_.options.highlightWeekends) || (_.$label.days[i] === _.initials.weekends.sat || _.$label.days[i] === _.initials.weekends.sun)) {
+        if (_.options.highlightWeekends || _.$label.days[i] === _.initials.weekends.sat || _.$label.days[i] === _.initials.weekends.sun) {
           headerClass += " --weekend";
         }
-        // _.options.highlightWeekends ? 
+        // _.options.highlightWeekends ?
         markup += '<td class="' + headerClass + '">' + _.$label.days[i] + "</td>";
       }
       markup += "</tr></table>" + "</div>";
@@ -635,9 +635,7 @@
 
   // v1.0.0 - Build Calendar: Title, Days
   EvoCalendar.prototype.buildCalendar = function () {
-    var _ = this;
-    var markup;
-    var title;
+    var _ = this, markup, title;
 
     _.calculateDays();
 
@@ -646,34 +644,46 @@
 
     _.$elements.innerEl.find(".calendar-body").remove(); // Clear days
 
-    markup += '<tr class="calendar-body">';
+    markup = '<tr class="calendar-body">';
     var day = 1;
-    for (var i = 0; i < 9; i++) {
-      // this loop is for is weeks (rows)
-      for (var j = 0; j < _.$label.days.length; j++) {
-        // this loop is for weekdays (cells)
-        if (day <= _.monthLength && (i > 0 || j >= _.startingDay)) {
-          var dayClass = "calendar-day";
-          if ((_.options.highlightWeekends) && (_.$label.days[j] === _.initials.weekends.sat || _.$label.days[j] === _.initials.weekends.sun)) {
-            dayClass += " --weekend"; // add '--weekend' to sat sun
-          }
-          markup += '<td class="' + dayClass + '">';
-
-          var thisDay = _.formatDate(_.$label.months[_.$active.month] + " " + day + " " + _.$active.year, _.options.format);
-          markup += '<div class="day" role="button" data-date-val="' + thisDay + '">' + day + "</div>";
-          day++;
-        } else {
-          markup += "<td>";
+    var dayCount = 0;
+    var weekCount = 0;
+    // First, build the days of the month
+    while (day <= _.monthLength || weekCount < 6) {
+      if (weekCount === 0 && dayCount < _.startingDay) {
+        markup += "<td></td>";
+      } else if (day <= _.monthLength) {
+        var dayClass = "calendar-day";
+        if (_.options.highlightWeekends && (_.$label.days[dayCount] === _.initials.weekends.sat || _.$label.days[dayCount] === _.initials.weekends.sun)) {
+          dayClass += " --weekend";
         }
+        markup += '<td class="' + dayClass + '">';
+        var thisDay = _.formatDate(_.$label.months[_.$active.month] + " " + day + " " + _.$active.year, _.options.format);
+        markup += '<div class="day" role="button" data-date-val="' + thisDay + '">' + day + "</div>";
         markup += "</td>";
-      }
-      if (day > _.monthLength) {
-        break; // stop making rows if we've run out of days
+        day++;
       } else {
-        markup += '</tr><tr class="calendar-body">'; // add if not
+        markup += '<td class="calendar-empty-cell"><div class="calendar-empty-filler"></div></td>';
+      }
+
+      dayCount++;
+      if (dayCount === 7) {
+        dayCount = 0;
+        weekCount++;
+        markup += "</tr>";
+        // force 6 rows for visual consistency
+        if (weekCount < 6) {
+          markup += '<tr class="calendar-body">';
+        }
       }
     }
-    markup += "</tr>";
+
+    // Fill in any remaining cells in the last row if necessary
+    while (dayCount > 0 && dayCount < 7) {
+      markup += "<td></td>";
+      dayCount++;
+    }
+
     _.$elements.innerEl.find(".calendar-table").append(markup);
 
     if (_.options.todayHighlight) {
@@ -925,9 +935,9 @@
     var date = $dayElement.data("dateVal");
     var eventIds = $dayElement.data("eventId");
 
-    var arr = Array.isArray(eventIds) ? eventIds : (eventIds ? eventIds.split(';') : []);
+    var arr = Array.isArray(eventIds) ? eventIds : eventIds ? eventIds.split(";") : [];
 
-    var events = arr.map(id => _.options.calendarEvents.find(e => e.id == id)).filter(Boolean);
+    var events = arr.map((id) => _.options.calendarEvents.find((e) => e.id == id)).filter(Boolean);
 
     $(_.$elements.calendarEl).trigger("onDayHover", [date, events]);
 
@@ -944,7 +954,7 @@
     //todo: send this as array rather than ';' concat
     var dateEvents = $dayElement.data("eventId");
 
-    $('.event-popup').remove();
+    $(".event-popup").remove();
 
     // Trigger a custom event when hover ends
     $(_.$elements.calendarEl).trigger("onDayHoverOut", [date, dateEvents]);
@@ -953,21 +963,18 @@
   // Attach dayHover listeners
   EvoCalendar.prototype.attachDayHoverListeners = function () {
     var _ = this;
-    _.$elements.innerEl.find(".calendar-day")
-      .off("mouseenter.evocalendar mouseleave.evocalendar")
-      .on("mouseenter.evocalendar", ".day", _.onDayHover.bind(_))
-      .on("mouseleave.evocalendar", ".day", _.onDayHoverOut.bind(_));
+    _.$elements.innerEl.find(".calendar-day").off("mouseenter.evocalendar mouseleave.evocalendar").on("mouseenter.evocalendar", ".day", _.onDayHover.bind(_)).on("mouseleave.evocalendar", ".day", _.onDayHoverOut.bind(_));
   };
 
-  // v1.0.0 Custom event 
+  // v1.0.0 Custom event
   EvoCalendar.prototype.showEventPopup = function ($dayElement, date, events) {
     var _ = this;
     var $popup = $('<div class="event-popup"></div>');
 
-    var themeColor = _.$elements.calendarEl.css('color') || '#8773c1';
+    var themeColor = _.$elements.calendarEl.css("color") || "#8773c1";
 
     var content = `<h4 style="color: ${themeColor}">${date}</h4>`;
-    events.forEach(event => {
+    events.forEach((event) => {
       var bulletColor = event.color || themeColor;
       content += `
       <p>
@@ -978,13 +985,13 @@
 
     $popup.html(content);
 
-    $('body').append($popup);
+    $("body").append($popup);
 
     var position = $dayElement.offset();
     $popup.css({
       top: position.top + $dayElement.outerHeight(),
       left: position.left,
-      display: 'block'
+      display: "block",
     });
   };
 
