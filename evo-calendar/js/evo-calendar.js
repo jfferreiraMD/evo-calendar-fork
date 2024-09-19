@@ -766,6 +766,11 @@
       var event_id = event.id;
       var type = event.type;
 
+      // Bugfix - would be broken if we didnt pass the event date as an array
+      if (!(event_date instanceof Array)) {
+          event_date = [event_date]; // Wrap the single date into an array
+      }
+
       if (event_date instanceof Array) {
           var active_date = _.getBetweenDates(event_date);
 
@@ -802,6 +807,7 @@
               _.$elements.innerEl;
           }
       }
+      _.buildCalendar();        
   };
 
   /****************
