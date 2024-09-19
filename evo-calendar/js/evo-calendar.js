@@ -3,7 +3,7 @@
  *
  * Licensed under the MIT License
  *
- * Version: 1.1.2 - José Ferreira fork 19/09/2024 14:44
+ * Version: 1.1.2
  * Author: Edlyn Villegas
  * Docs: https://edlynvillegas.github.com/evo-calendar
  * Repo: https://github.com/edlynvillegas/evo-calendar
@@ -922,8 +922,8 @@
       var events = (Array.isArray(eventIds) ? eventIds : eventIds ? eventIds.split(";") : [])
           .map(id => _.options.calendarEvents.find(e => e.id == id))
           .filter(Boolean);
-
-      $(_.$elements.calendarEl).trigger("selectDate", [_.$active.date, oldDate, events]);
+      var dateDetails = { isWeekend: activeDayEl.parent().hasClass('--weekend'), hasEvents: events.length > 0 };
+      $(_.$elements.calendarEl).trigger("selectDate", [_.$active.date, oldDate, dateDetails, events]);
   };
 
   // v1.0.0 Custom event by José Ferreira - Handle day hover
