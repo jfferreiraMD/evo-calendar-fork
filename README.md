@@ -1,12 +1,15 @@
+# Evo Calendar Fork
+
+This fork enhances the original Evo Calendar with additional events and a custom property.
+
 ## Fork Modifications
 
-This fork adds new events to enhance the calendar's interactivity:
-
-- `onDayHover`: Triggered when a day in the calendar is hovered over.
-- `onDayHoverOut`: Triggered when the mouse leaves a calendar day.
+This fork adds/changes events to enhance the calendar's interactivity:
+- `onDayHover`: Fired when a day in the calendar is hovered over.
+- `onDayHoverOut`: Fired when the mouse leaves a calendar day.
+- `selectDate`: Fired when a calendar's day is selected. - Now returns events[] (array with the events) and dateDetails {hasEvents: (bool) isWeekend: (bool)} 
 
 ### Usage Example
-
 ```javascript
 $calendar.on('onDayHover', function(event, date) {
     console.log('Hovered into day:', date);
@@ -15,8 +18,39 @@ $calendar.on('onDayHover', function(event, date) {
 $calendar.on('onDayHoverOut', function(event, date) {
     console.log('Hovered out of day:', date);
 });
+
+$calendar.on('selectDate', function(event, newDate, oldDate, dateDetails, events){
+    if(dateDetails.isWeekend) {
+        console.log(newDate + ' is during the weekend');
+    }
+    if(dateDetails.hasEvents) {
+        console.log(events);
+    }
+});
+}
 ```
-______________________________________________________________________________________________________________________________________
+
+The constructor has new keys to be set: 
+- `highlightWeekends`: visually highlights the calendar's weekends
+
+## Usage Example
+
+```javascript
+$("#evoCalendar").evoCalendar({
+    {
+        name: "Vacation Leave",
+        badge: "02/13 - 02/15", // Event badge (optional)
+        date: ["February/13/2020", "February/15/2020"], // Date range
+        description: "Vacation leave for 3 days.", // Event description (optional)
+        type: "event",
+        color: "#63d867", // Event custom color (optional)
+        highlightWeekends: true, 
+    }
+});
+```
+
+
+_____________________________________________________________________________________________________________________________________
 
 # evo-calendar
 _Simple Modern-looking Event Calendar_
